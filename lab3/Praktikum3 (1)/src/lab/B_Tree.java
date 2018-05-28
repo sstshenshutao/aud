@@ -1,5 +1,7 @@
 package lab;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 
 import frame.*;
@@ -17,7 +19,9 @@ import frame.*;
 
 
 public class B_Tree {
-
+	private B_TreeNode tree;
+	private B_TreeNode root;
+	private int t;
     /**
 	* The constructor
 	* 
@@ -30,9 +34,14 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-
+    		this.t = t;
+    		init(t);
     }
 
+    private void init(int t) {
+    		this.tree = new B_TreeNode(t);
+    		this.root = this.tree;
+    }
     /**
 	 * This method takes as input the name of a file containing a sequence of
        * entries that should be inserted to the B-Tree in the order they appear in
@@ -51,7 +60,24 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return 0;
+    		//this I/O Operation is referred from lab 1.
+		FileReader fr;
+		int insertSucc = 0;
+		try {
+			fr = new FileReader(filename);
+			BufferedReader in = new BufferedReader(fr);
+			String line;	
+			while ((line = in.readLine()) != null) {
+				String[] ls = line.split(";");
+				if(insert(new Entry(ls[0], ls[1], ls[2]))) insertSucc++;
+			}
+			in.close();
+			fr.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return insertSucc;
     }
     
     /**
@@ -71,10 +97,55 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return true;
+    		B_TreeNode r = this.root;
+    		if (r.getN() == 2*this.t-1) {
+    			B_TreeNode s= new B_TreeNode(t);
+    			this.root = s;
+    			s.setLeaf(false);
+    			s.setN(0);
+    			s.setC(0, r);
+    			splitChild(s,0);
+    			insertNonFull(s,insertEntry);
+    		}else {
+    			insertNonFull(r,insertEntry);
+    		}
+    		return true;
     }
     
-    /**
+    private void insertNonFull(B_TreeNode x, Entry insertEntry) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void splitChild(B_TreeNode x, int i) {
+		// TODO Auto-generated method stub
+		B_TreeNode z= new B_TreeNode(t);
+		B_TreeNode y= x.getC(i);
+		z.setLeaf(y.isLeaf());
+		z.setN(t-1);
+		for(int j=0; j<t-1; j++) {
+			z.setKey(j, y.getKey(j+t));
+		}
+		if(!y.isLeaf()) {
+			for(int j=0;j<t;j++) {
+				z.setC(j, y.getC(j+t));
+			}
+		}
+		y.setN(t-1);
+		for(int j = x.getN(); j>i; j--) {
+			x.setC(j+1,x.getC(j));
+		}
+		x.setC(i+1, z);
+		for (int j=x.getN()-1;j>i-1;j--) {
+			x.setKey(j+1, x.getKey(j));
+		}
+		x.setKey(i, y.getKey(t-1));
+		x.setN(x.getN() +1);
+		
+		
+	}
+
+	/**
 	 * This method deletes the entry from the B-Tree structure, having deleteKey
        * as key. In this method you have to distinguish between two cases:
        *     1. The entry, having deleteKey as key, is located in an internal node.
