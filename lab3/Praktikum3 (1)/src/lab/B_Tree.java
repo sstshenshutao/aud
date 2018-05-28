@@ -174,7 +174,7 @@ public class B_Tree {
 			}
 		}
 		y.setN(t-1);
-		for(int j = x.getN()-1; j>i; j--) {
+		for(int j = x.getN(); j>i; j--) {
 			x.setC(j+1,x.getC(j));
 		}
 		x.setC(i+1, z);
