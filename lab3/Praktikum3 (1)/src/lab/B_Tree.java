@@ -1,8 +1,11 @@
 package lab;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import frame.*;
 
@@ -204,6 +207,44 @@ public class B_Tree {
     	return new Entry();
     }
     
+    private String writeNode(B_TreeNode node, String nodeName) {
+	    	String linen= new String(nodeName+"[label=\"");
+	    	for (int i=0; i<node.getN();i++) {
+	    		linen+= ("<f"+(i*2)+">*"+
+	    				"|<f"+(i*2+1)+">" + this.root.getKey(i).getKey()+"|");
+	    	}
+	    	linen+=("<f"+(this.root.getN()*2)+">*\"];");
+	    return linen;
+    }
+ 
+    private ArrayList<String> getB_TreeNode(ArrayList<String> nodeline, List <B_TreeNode> node, int index) {
+    		String nodeName=	"root";
+    		String line = writeNode(node.get(0),nodeName);//write root
+	    	nodeline.add(line);
+	    	ArrayList<String> relation = new ArrayList<>();
+	    	
+	    	ArrayList<String> nodeNames= new ArrayList<>();
+	    	nodeNames.add(nodeName);
+	    	while(node.size()!=0) {
+	    		if(node.get(0).isLeaf()) break;
+	    		ArrayList<B_TreeNode> tmpnode= new ArrayList<>();
+	    		ArrayList<String> tmpNames = new ArrayList<>();
+	    		for(int j=0; j<node.size();j++) {
+	    			nodeName = nodeNames.get(j);
+	    			for (int i=0; i<=node.get(j).getN();i++) {
+	    				if(!node.get(j).getC(i).isLeaf()) {
+	    					tmpnode.add(node.get(j).getC(i));
+	    					tmpNames.add("node"+String.valueOf(index));}
+			    		relation.add(nodeName+":f"+2*i+"->node"+index+";");
+			    		nodeline.add(writeNode(node.get(j).getC(i), "node"+String.valueOf(index)));
+			    		index++;
+			    	}
+	    		}
+	    		node = tmpnode;
+	    		nodeNames= tmpNames;
+	    	}
+    	return relation;
+    }
     /**
 	 * This method returns a ArrayList<String> containing the output B-Tree.
        * The output should be directly interpretable dot code.
@@ -218,7 +259,15 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return new ArrayList<>();
+    	ArrayList<String> ret = new ArrayList<>();
+    	ret.add("digraph{");
+    	ret.add("node[shape=record];");
+    List<B_TreeNode> nodelist = new ArrayList<>();
+    nodelist.add(this.root);
+    ArrayList<String> relation =getB_TreeNode( ret, nodelist, 2);
+    	ret.addAll(relation);
+    ret.add("}");
+    	return ret;
     }
 
     /**
@@ -267,4 +316,13 @@ public class B_Tree {
     	   */
     	return 0;
     }
+    
+    
+    
+    public static void main(String[] args) {
+    		B_Tree b = new B_Tree(2);
+		b.constructB_TreeFromFile("TestFile1.txt");
+		ArrayList<String> out = b.getB_Tree();
+		out.forEach(x->System.out.println(x));
+	}
 }
