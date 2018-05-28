@@ -27,7 +27,6 @@ public class B_Tree {
 	private int t;
 	
 	//--------------调试用---------------------
-	private int tiaoshi1;
 	
 	
 	
@@ -80,8 +79,6 @@ public class B_Tree {
 			while ((line = in.readLine()) != null) {
 				String[] ls = line.split(";");
 				if(insert(new Entry(ls[0], ls[1], ls[2]))) insertSucc++;
-				//调试用
-				getInorderTraversal().forEach(x->System.out.println(x));;
 				
 			}
 			in.close();
@@ -118,15 +115,10 @@ public class B_Tree {
     			s.setN(0);
     			s.setC(0, r);
     			splitChild(s,0);
-    			//调试用
-    			System.out.println("s.n:"+r.getN());
     			insertNonFull(s,insertEntry);
     		}else {
-    			//调试用
-    			System.out.println("r.n:"+r.getN());
     			insertNonFull(r,insertEntry);
     		}
-	    	System.out.println(tiaoshi1++);
     		return true;
     }
     
@@ -145,9 +137,6 @@ public class B_Tree {
 	    			i--;
 	    		}
 	    		i++;
-	    		//调试用
-	    		System.out.println("dasdasdasd:"+i);
-	    		System.out.println(x.getN());
 	    		if(x.getC(i).getN()==2*this.t-1) {
 	    			splitChild(x, i);
 	    			if(k.compareTo(x.getKey(i))>0) {
@@ -300,7 +289,13 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return 0;
+    		B_TreeNode node = this.root;
+    		int h=0;
+    		while(!node.isLeaf()) {
+    			node = node.getC(0);
+    			h++;
+    		}
+    		return h;
     }
 
     /**
@@ -350,14 +345,25 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return 0;
+    	return getsize(this.root);
     }
-    
+    private int getsize(B_TreeNode node) {
+    		if(node.isLeaf()) {
+    			return node.getN();
+    		}else {
+    			int a=0;
+    			for(int i=0;i<=node.getN();i++) {
+    				a+=getsize(node.getC(i));
+    			}
+    			a+=node.getN();
+    			return a;
+    		}
+    }
     
     
     public static void main(String[] args) {
     		B_Tree b = new B_Tree(2);
-		b.constructB_TreeFromFile("testmy.txt");
+		b.constructB_TreeFromFile("TestFile1.txt");
 		ArrayList<String> out = b.getB_Tree();
 		out.forEach(x->System.out.println(x));
 	}
