@@ -1,5 +1,6 @@
 package lab;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import frame.Entry;
@@ -16,8 +17,8 @@ import frame.Entry;
 
 public class B_TreeNode {
 	private int n;
-	private List<Entry> key;
-	private List<B_TreeNode> c;
+	private Entry[] key;
+	private B_TreeNode[] c;
 	private boolean leaf;
     /**
 	* The constructor
@@ -30,7 +31,10 @@ public class B_TreeNode {
         /**
          * Add your code here
     	   */
-    		
+    		key = new Entry[2*t-1];
+    		c = new B_TreeNode[2*t];
+    		n = 0;
+    		leaf = true;
     }
 	/**
 	 * @return the n
@@ -42,13 +46,13 @@ public class B_TreeNode {
 	 * @return the key
 	 */
 	public Entry getKey(int index) {
-		return key.get(index);
+		return key[index];
 	}
 	/**
 	 * @return the c
 	 */
 	public B_TreeNode getC(int index) {
-		return c.get(index);
+		return c[index];
 	}
 	/**
 	 * @return the leaf
@@ -66,29 +70,16 @@ public class B_TreeNode {
 	 * @param key the key to set
 	 */
 	public void setKey(int index, Entry entry) {
-		if (index < n ) {
-			this.key.set(index, entry);
-		}else {
-			for(int i = n; i<index; i++) {
-				this.key.add(null);
-			}
-			this.key.add(entry);
-		}
+			this.key[index]= entry;
 	}
 	/**
 	 * @param c the c to set
 	 */
 	public void setC(int index, B_TreeNode c) {
-		if (index < n ) {
-			this.c.set(index, c);
-		}else {
-			for(int i = n; i<index; i++) {
-				this.c.add(null);
-			}
-			this.c.add(c);
-		}
 		
+			this.c[index]= c;
 	}
+		
 	/**
 	 * @param leaf the leaf to set
 	 */

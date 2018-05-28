@@ -25,6 +25,13 @@ public class B_Tree {
 	private B_TreeNode tree;
 	private B_TreeNode root;
 	private int t;
+	
+	//--------------调试用---------------------
+	private int tiaoshi1;
+	
+	
+	
+	//--------------调试用---------------------
     /**
 	* The constructor
 	* 
@@ -73,6 +80,9 @@ public class B_Tree {
 			while ((line = in.readLine()) != null) {
 				String[] ls = line.split(";");
 				if(insert(new Entry(ls[0], ls[1], ls[2]))) insertSucc++;
+				//调试用
+				getInorderTraversal().forEach(x->System.out.println(x));;
+				
 			}
 			in.close();
 			fr.close();
@@ -108,10 +118,15 @@ public class B_Tree {
     			s.setN(0);
     			s.setC(0, r);
     			splitChild(s,0);
+    			//调试用
+    			System.out.println("s.n:"+r.getN());
     			insertNonFull(s,insertEntry);
     		}else {
+    			//调试用
+    			System.out.println("r.n:"+r.getN());
     			insertNonFull(r,insertEntry);
     		}
+	    	System.out.println(tiaoshi1++);
     		return true;
     }
     
@@ -130,6 +145,9 @@ public class B_Tree {
 	    			i--;
 	    		}
 	    		i++;
+	    		//调试用
+	    		System.out.println("dasdasdasd:"+i);
+	    		System.out.println(x.getN());
 	    		if(x.getC(i).getN()==2*this.t-1) {
 	    			splitChild(x, i);
 	    			if(k.compareTo(x.getKey(i))>0) {
@@ -211,9 +229,9 @@ public class B_Tree {
 	    	String linen= new String(nodeName+"[label=\"");
 	    	for (int i=0; i<node.getN();i++) {
 	    		linen+= ("<f"+(i*2)+">*"+
-	    				"|<f"+(i*2+1)+">" + this.root.getKey(i).getKey()+"|");
+	    				"|<f"+(i*2+1)+">" + node.getKey(i).getKey()+"|");
 	    	}
-	    	linen+=("<f"+(this.root.getN()*2)+">*\"];");
+	    	linen+=("<f"+(node.getN()*2)+">*\"];");
 	    return linen;
     }
  
@@ -298,9 +316,27 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return new ArrayList<>();
+    		
+    		return walk(this.root);
     }
 
+    private ArrayList<Entry> walk(B_TreeNode node){
+	    	if	(node.isLeaf()) {
+	    		ArrayList<Entry> ret = new ArrayList<>();
+	    		for(int i=0; i<node.getN();i++) {
+				ret.add(node.getKey(i));
+			}
+	    		return ret;
+	    	}else {
+	    		ArrayList<Entry> ret = new ArrayList<>();
+	    		for(int i=0; i<node.getN();i++) {
+	    			ret.addAll(walk(node.getC(i)));
+				ret.add(node.getKey(i));
+			}
+	    		ret.addAll(walk(node.getC(node.getN())));
+	    		return ret;
+	    	}
+    }
     /**
 	 * This method returns the number of entries in the B-Tree (not the number
        * of nodes).
@@ -321,7 +357,7 @@ public class B_Tree {
     
     public static void main(String[] args) {
     		B_Tree b = new B_Tree(2);
-		b.constructB_TreeFromFile("TestFile1.txt");
+		b.constructB_TreeFromFile("testmy.txt");
 		ArrayList<String> out = b.getB_Tree();
 		out.forEach(x->System.out.println(x));
 	}
