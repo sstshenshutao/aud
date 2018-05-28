@@ -112,8 +112,29 @@ public class B_Tree {
     		return true;
     }
     
-    private void insertNonFull(B_TreeNode x, Entry insertEntry) {
+    private void insertNonFull(B_TreeNode x, Entry k) {
 		// TODO Auto-generated method stub
+	    	int i = x.getN()-1;
+	    	if (x.isLeaf()) {
+	    		while(i>=0 && k.compareTo(x.getKey(i))<0) {
+	    			x.setKey(i+1, x.getKey(i));
+	    			i--;
+	    		}
+	    		x.setKey(i+1, k);
+	    		x.setN(x.getN()+1);
+	    	}else {
+	    		while(i>=0 && k.compareTo(x.getKey(i))<0) {
+	    			i--;
+	    		}
+	    		i++;
+	    		if(x.getC(i).getN()==2*this.t-1) {
+	    			splitChild(x, i);
+	    			if(k.compareTo(x.getKey(i))>0) {
+	    				i++;
+	    			}
+	    		}
+	    		insertNonFull(x.getC(i), k);
+	    	}
 		
 	}
 
@@ -132,7 +153,7 @@ public class B_Tree {
 			}
 		}
 		y.setN(t-1);
-		for(int j = x.getN(); j>i; j--) {
+		for(int j = x.getN()-1; j>i; j--) {
 			x.setC(j+1,x.getC(j));
 		}
 		x.setC(i+1, z);
@@ -141,8 +162,6 @@ public class B_Tree {
 		}
 		x.setKey(i, y.getKey(t-1));
 		x.setN(x.getN() +1);
-		
-		
 	}
 
 	/**
