@@ -211,8 +211,23 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	return new Entry();
+    	return searchBnode(this.root, searchKey);
     }
+    private Entry searchBnode(B_TreeNode node, String key) {
+    		int i=0;
+    		while(i<node.getN() && key.compareTo(node.getKey(i).getKey())>0) {
+    			i++;
+    		}
+    		if (i<node.getN() && key.compareTo(node.getKey(i).getKey())==0) {
+    			return node.getKey(i);
+    		}else if (node.isLeaf()) {
+    			return null;
+    		}else {
+    			return searchBnode(node.getC(i),key);
+    		}
+    	
+    }
+    
     
     private String writeNode(B_TreeNode node, String nodeName) {
 	    	String linen= new String(nodeName+"[label=\"");
