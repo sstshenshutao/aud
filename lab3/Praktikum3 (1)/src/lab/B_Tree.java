@@ -107,6 +107,7 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
+    		if (getInorderTraversal().stream().anyMatch(x->(x.compareTo(insertEntry)==0))) return false;
     		B_TreeNode r = this.root;
     		if (r.getN() == 2*this.t-1) {
     			B_TreeNode s= new B_TreeNode(t);
@@ -193,9 +194,190 @@ public class B_Tree {
         /**
          * Add your code here
     	   */ 
-    	return new Entry();
+    		return deleteNode(this.root, deleteKey);
     }
+    private Entry deleteNode(B_TreeNode x, String key) {
+    		if(contain(x, key)) {
+    			//1.2.
+    			if(x.isLeaf()) {
+    				//1.
+    				//delete key from x
+    				int ki=0;
+    				while(ki<x.getN() && x.getKey(ki).getKey().compareTo(key)!=0) {
+    					ki++;
+    				}
+    				Entry delEntry = x.getKey(ki);
+    				while(ki<x.getN()-1) {
+    					x.setKey(ki, x.getKey(ki+1));
+    				}
+    				x.setN(x.getN()-1);
+    				//delete finished
+    				return delEntry;
+    			}else {
+    				int ci2=0;
+    				while(ci2<x.getN() && x.getKey(ci2).getKey().compareTo(key)!=0) {
+    					ci2++;
+    				}
+    				B_TreeNode prev = x.getC(ci2);
+    				B_TreeNode succ = x.getC(ci2+1);		
+    				
+    				//2.a
+    				if(prev.getN()>=t) {
+    					x.setKey(ci2, prev.getKey(prev.getN()-1));
+    					return deleteNode(prev, prev.getKey(prev.getN()-1).getKey());
+    				}
+    				//2.b
+    				else if(succ.getN()>=t) {
+    					x.setKey(ci2, succ.getKey(0));
+    					return deleteNode(succ, succ.getKey(0).getKey());
+    				}
+    				//2.c
+    				else {
+    					Entry ki = x.getKey(ci2);
+    					//key forward
+    					for(int i=ci2; i<x.getN()-1;i++) {
+    						x.setKey(i, x.getKey(i+1));
+    					}
+    					//c forward
+    					for(int i=ci2+1; i<x.getN();i++) {
+    						x.setC(i, x.getC(i+1));
+    					}
+    					//x. n-1
+    					x.setN(x.getN());
+    					//(ki und succ) into prev 
+    					prev.setKey(t-1, ki);
+    					for(int i=0;i<t-1;i++) {
+    						prev.setKey(t+i, succ.getKey(i));
+    						prev.setC(t+i, succ.getC(i));
+    					}
+    					prev.setC(2*t-1, succ.getC(t-1));
+    					//x.ci2 -> prev
+    					x.setC(ci2, prev);
+    					return deleteNode(prev, key);
+    				}
+    			}
+    		}else {
+    			//3
+    			int ci3=0;
+			while(ci3<x.getN() && x.getKey(ci3).getKey().compareTo(key)<0) {
+				ci3++;
+			}
+			B_TreeNode ckNode = x.getC(ci3);
+			if(ckNode.getN()==t-1) {
+				//need 3a 3b
+				//3a
+				int[] brothers =  getBrothers(ci3, x.getN());
+				boolean fall3a=false;
+				for(int i: brothers) {
+					if(x.getC(i).getN()>=t) {
+						fall3a = true;
+						if (i>ci3) {
+							//succ first ele
+							rightRotate(ci3,x);
+						}else {
+							//prev last ele
+							leftRotate(ci3, x);
+						}
+					}
+				}
+				//3b
+				if (!fall3a) {
+					merge(ci3,x);
+				}
+				//cknode -> new passed node 
+				ckNode = x.getC(ci3);
+			}
+			return deleteNode(ckNode,key);
+    		}
+    		
+    		
+    }
+	private void merge(int ci3, B_TreeNode x) {
+		// TODO Auto-generated method stub
+		B_TreeNode left= x.getC(ci3);
+		B_TreeNode right= x.getC(ci3+1);
+			Entry kNode =x.getKey(ci3);
+		//xkey forward
+		for(int i=ci3; i<x.getN()-1;i++) {
+			x.setKey(i, x.getKey(i+1));
+		}
+		//xc forward
+		for(int i=ci3+1; i<x.getN();i++) {
+			x.setC(i, x.getC(i+1));
+		}
+		//x. n-1
+		x.setN(x.getN());
+		//left und right and knode merge
+		left.setKey(t-1, kNode);
+		for(int i=0;i<t-1;i++) {
+			left.setKey(t+i, right.getKey(i));
+			left.setC(t+i, right.getC(i));
+		}
+		left.setC(2*t-1, right.getC(t-1));
+		//-------
+		x.setC(ci3, left);
+	}
 
+	private void rightRotate(int ci3, B_TreeNode x) {
+		// TODO Auto-generated method stub
+		B_TreeNode left = x.getC(ci3);
+		B_TreeNode right =x.getC(ci3+1);
+		Entry y = x.getKey(ci3); //y
+		Entry firstKeyRight= right.getKey(0); // x
+		//left:
+		left.setKey(left.getN(), y);
+		left.setC(left.getN() + 1, right.getC(0));
+		left.setN(left.getN()+1);
+		//middle:
+		x.setKey(ci3, firstKeyRight);
+		//right:
+		for(int i=0;i<right.getN()-1;i++) {
+			right.setKey(i, right.getKey(i+1));
+			right.setC(i, right.getC(i+1));
+		}
+		right.setC(right.getN()-1, right.getC(right.getN()));
+		right.setN(right.getN()-1);
+	}
+	private void leftRotate(int ci3, B_TreeNode x) {
+		// TODO Auto-generated method stub
+		B_TreeNode left = x.getC(ci3);
+		B_TreeNode right =x.getC(ci3+1);
+		Entry y = x.getKey(ci3); //y
+		Entry lastKeyLeft= left.getKey(left.getN()-1); // x
+		//right:
+		insertNonFull(right, y);
+		right.setC(0, left.getC(left.getN()));
+		//middle:
+		x.setKey(ci3, lastKeyLeft);
+		//left:
+		left.setN(left.getN()-1);
+	}
+
+	private int[] getBrothers(int index, int max){
+		if (index==0) {
+			return new int[] {1};}
+		else if (index== max) {
+			int[] a= new int[1];
+			a[0]=max-1;
+			return  a;}
+		else {
+			int[] a= new int[2];
+			a[0]=index-1;
+			a[1]=index+1;
+			return a;
+		}
+		
+	}
+    private boolean contain(B_TreeNode node, String key) {
+    		boolean ret =false;
+    		for(int i=0; i<node.getN();i++)
+    		{
+    			if (node.getKey(i).getKey().compareTo(key)==0) {
+    				ret = true;
+    			}
+    		}
+    		return ret;
+    }
     /**
 	 * This method searches in the B-Tree for the entry with key searchKey. It
        * returns the entry, having searchKey as key if such an entry is found, null
