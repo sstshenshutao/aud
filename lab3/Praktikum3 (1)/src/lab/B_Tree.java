@@ -197,6 +197,7 @@ public class B_Tree {
     		return deleteNode(this.root, deleteKey);
     }
     private Entry deleteNode(B_TreeNode x, String key) {
+    		if(!this.getInorderTraversal().stream().anyMatch(s->s.getKey().equals(key))) return null; 
     		if(contain(x, key)) {
     			//1.2.
     			if(x.isLeaf()) {
@@ -220,16 +221,18 @@ public class B_Tree {
     				}
     				B_TreeNode prev = x.getC(ci2);
     				B_TreeNode succ = x.getC(ci2+1);		
-    				
+    				Entry delEntry=x.getKey(ci2);
     				//2.a
     				if(prev.getN()>=t) {
     					x.setKey(ci2, prev.getKey(prev.getN()-1));
-    					return deleteNode(prev, prev.getKey(prev.getN()-1).getKey());
+    					deleteNode(prev, prev.getKey(prev.getN()-1).getKey());
+    					return delEntry;
     				}
     				//2.b
     				else if(succ.getN()>=t) {
     					x.setKey(ci2, succ.getKey(0));
-    					return deleteNode(succ, succ.getKey(0).getKey());
+    					deleteNode(succ, succ.getKey(0).getKey());
+    					return delEntry;
     				}
     				//2.c
     				else {
@@ -243,7 +246,7 @@ public class B_Tree {
     						x.setC(i, x.getC(i+1));
     					}
     					//x. n-1
-    					x.setN(x.getN());
+    					x.setN(x.getN()-1);
     					//(ki und succ) into prev 
     					prev.setKey(t-1, ki);
     					for(int i=0;i<t-1;i++) {
@@ -251,6 +254,8 @@ public class B_Tree {
     						prev.setC(t+i, succ.getC(i));
     					}
     					prev.setC(2*t-1, succ.getC(t-1));
+    					//prev n ->2t-1
+    					prev.setN(2*t-1);
     					//x.ci2 -> prev
     					x.setC(ci2, prev);
     					return deleteNode(prev, key);
@@ -278,21 +283,31 @@ public class B_Tree {
 							//prev last ele
 							leftRotate(ci3, x);
 						}
+						if(fall3a) break;
 					}
 				}
+				ckNode = x.getC(ci3);
 				//3b
 				if (!fall3a) {
-					merge(ci3,x);
+					if(ci3==0) {
+						//zuo
+						rmerge(ci3,x);	
+						ckNode = x.getC(ci3);
+					}else {
+						merge(ci3,x);		
+						ckNode = x.getC(ci3-1);
+					}
+					
 				}
 				//cknode -> new passed node 
-				ckNode = x.getC(ci3);
+				
 			}
 			return deleteNode(ckNode,key);
     		}
     		
     		
     }
-	private void merge(int ci3, B_TreeNode x) {
+    private void rmerge(int ci3, B_TreeNode x) {
 		// TODO Auto-generated method stub
 		B_TreeNode left= x.getC(ci3);
 		B_TreeNode right= x.getC(ci3+1);
@@ -306,7 +321,7 @@ public class B_Tree {
 			x.setC(i, x.getC(i+1));
 		}
 		//x. n-1
-		x.setN(x.getN());
+		x.setN(x.getN()-1);
 		//left und right and knode merge
 		left.setKey(t-1, kNode);
 		for(int i=0;i<t-1;i++) {
@@ -316,6 +331,31 @@ public class B_Tree {
 		left.setC(2*t-1, right.getC(t-1));
 		//-------
 		x.setC(ci3, left);
+	}
+	private void merge(int ci3, B_TreeNode x) {
+		// TODO Auto-generated method stub
+		B_TreeNode left= x.getC(ci3-1);
+		B_TreeNode right= x.getC(ci3);
+			Entry kNode =x.getKey(ci3-1);
+		//xkey forward
+		for(int i=ci3-1; i<x.getN()-1;i++) {
+			x.setKey(i, x.getKey(i+1));
+		}
+		//xc forward
+		for(int i=ci3; i<x.getN();i++) {
+			x.setC(i, x.getC(i+1));
+		}
+		//x. n-1
+		x.setN(x.getN()-1);
+		//left und right and knode merge
+		left.setKey(t-1, kNode);
+		for(int i=0;i<t-1;i++) {
+			left.setKey(t+i, right.getKey(i));
+			left.setC(t+i, right.getC(i));
+		}
+		left.setC(2*t-1, right.getC(t-1));
+		//-------
+		x.setC(ci3-1, left);
 	}
 
 	private void rightRotate(int ci3, B_TreeNode x) {
@@ -340,15 +380,21 @@ public class B_Tree {
 	}
 	private void leftRotate(int ci3, B_TreeNode x) {
 		// TODO Auto-generated method stub
-		B_TreeNode left = x.getC(ci3);
-		B_TreeNode right =x.getC(ci3+1);
-		Entry y = x.getKey(ci3); //y
+		B_TreeNode left = x.getC(ci3-1);
+		B_TreeNode right =x.getC(ci3);
+		Entry y = x.getKey(ci3-1); //y
 		Entry lastKeyLeft= left.getKey(left.getN()-1); // x
 		//right:
-		insertNonFull(right, y);
+		for(int i=0;i<right.getN()-1;i++) {
+			right.setKey(i+1, right.getKey(i));
+			right.setC(i+1, right.getC(i));
+		}
+		right.setC(right.getN(), right.getC(right.getN()-1));
+		right.setKey(0, y);
 		right.setC(0, left.getC(left.getN()));
+		right.setN(right.getN()+1);
 		//middle:
-		x.setKey(ci3, lastKeyLeft);
+		x.setKey(ci3-1, lastKeyLeft);
 		//left:
 		left.setN(left.getN()-1);
 	}
@@ -356,9 +402,9 @@ public class B_Tree {
 	private int[] getBrothers(int index, int max){
 		if (index==0) {
 			return new int[] {1};}
-		else if (index== max) {
+		else if (index== max-1) {
 			int[] a= new int[1];
-			a[0]=max-1;
+			a[0]=max-2;
 			return  a;}
 		else {
 			int[] a= new int[2];
@@ -561,7 +607,9 @@ public class B_Tree {
     public static void main(String[] args) {
     		B_Tree b = new B_Tree(2);
 		b.constructB_TreeFromFile("TestFile1.txt");
-		ArrayList<String> out = b.getB_Tree();
-		out.forEach(x->System.out.println(x));
+		b.delete("L2Z7499YH");
+//		b.delete("FMF1QTZ0Q");
+//		b.delete("L2Z74TZ0Q");
+		b.getB_Tree().forEach(x->System.out.println(x));;
 	}
 }
