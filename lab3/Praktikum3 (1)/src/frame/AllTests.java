@@ -323,7 +323,7 @@ public class AllTests {
 			b.delete("L2Z74TZ0Q");
 			ArrayList<String> out = b.getB_Tree();
 			constractB_Tree(out);
-			out.forEach(x->System.out.println(x));
+//			out.forEach(x->System.out.println(x));
 			int iiii=0;
 			for(TestNode n: nodes) {
 				System.out.println("node"+iiii);
@@ -352,6 +352,7 @@ public class AllTests {
 			b.delete("L2Z7499YH");
 			b.delete("FMF1QTZ0Q");
 			b.delete("L2Z74TZ0Q");
+			b.getB_Tree().forEach(x->System.out.println(x));
 			assertTrue(testOrderOfEntries(b.getInorderTraversal()),
 					"getInorderTraversal() doesn't deliver entries in inorder traversal!");
 		}
