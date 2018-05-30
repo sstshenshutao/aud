@@ -44,7 +44,7 @@ public class AllTests {
 		boolean t1 = (t.getEntries().size() == n_e || t.getEntries().size() == n_e2);
 		boolean t2 = (t.getChildren().size() == n_ch || t.getChildren().size() == n_ch2);
 		boolean t3 = (t.entriesToString().equalsIgnoreCase(ent) || t.entriesToString().equalsIgnoreCase(ent2));
-
+		System.out.println(t.entriesToString());
 		assertTrue(t1, "Number of entries of " + name + " not correct!");
 		assertTrue(t2, "Number of childen of " + name + " not correct!");
 		assertTrue(t3, "Entries of " + name + " not correct!");
@@ -54,6 +54,7 @@ public class AllTests {
 	protected boolean testOrderOfEntries(ArrayList<Entry> e) {
 		for (int i = 0; i < e.size() - 1; i++) {
 			if (e.get(i).compareTo(e.get(i + 1)) >= 0) {
+				System.out.println(e.get(i)+"|"+e.get(i+1));
 				return false;
 			}
 		}

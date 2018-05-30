@@ -468,34 +468,54 @@ public class B_Tree {
 	    	linen+=("<f"+(node.getN()*2)+">*\"];");
 	    return linen;
     }
- 
-    private ArrayList<String> getB_TreeNode(ArrayList<String> nodeline, List <B_TreeNode> node, int index) {
-    		String nodeName=	"root";
-    		String line = writeNode(node.get(0),nodeName);//write root
-	    	nodeline.add(line);
-	    	ArrayList<String> relation = new ArrayList<>();
-	    	
-	    	ArrayList<String> nodeNames= new ArrayList<>();
-	    	nodeNames.add(nodeName);
-	    	while(node.size()!=0) {
-	    		if(node.get(0).isLeaf()) break;
-	    		ArrayList<B_TreeNode> tmpnode= new ArrayList<>();
-	    		ArrayList<String> tmpNames = new ArrayList<>();
-	    		for(int j=0; j<node.size();j++) {
-	    			nodeName = nodeNames.get(j);
-	    			for (int i=0; i<=node.get(j).getN();i++) {
-	    				if(!node.get(j).getC(i).isLeaf()) {
-	    					tmpnode.add(node.get(j).getC(i));
-	    					tmpNames.add("node"+String.valueOf(index));}
-			    		relation.add(nodeName+":f"+2*i+"->node"+index+";");
-			    		nodeline.add(writeNode(node.get(j).getC(i), "node"+String.valueOf(index)));
-			    		index++;
-			    	}
-	    		}
-	    		node = tmpnode;
-	    		nodeNames= tmpNames;
-	    	}
-    	return relation;
+    private int index=0;
+    private ArrayList<String> getB_TreeNode(ArrayList<String> a, B_TreeNode node) {
+		String nodeName;	
+		if (index ==1 ) {
+			nodeName="root";}
+		else {
+			nodeName="node"+String.valueOf(index);
+		}
+		a.add(writeNode(node, nodeName));
+		ArrayList<String> r= new ArrayList<>();
+		ArrayList<String> k= new ArrayList<>();
+		index++;
+		if(!node.isLeaf()) {
+			for(int i=0;i<=node.getN();i++) {
+				r.add(nodeName+":f"+2*i+"->node"+index+";");
+				k.addAll(getB_TreeNode(a,node.getC(i)));
+			}
+			r.addAll(k);
+		}
+    		return r;
+    	
+    	
+//    	String nodeName=	"root";
+//    		String line = writeNode(node.get(0),nodeName);//write root
+//	    	nodeline.add(line);
+//	    	ArrayList<String> relation = new ArrayList<>();
+//	    	
+//	    	ArrayList<String> nodeNames= new ArrayList<>();
+//	    	nodeNames.add(nodeName);
+//	    	while(node.size()!=0) {
+//	    		if(node.get(0).isLeaf()) break;
+//	    		ArrayList<B_TreeNode> tmpnode= new ArrayList<>();
+//	    		ArrayList<String> tmpNames = new ArrayList<>();
+//	    		for(int j=0; j<node.size();j++) {
+//	    			nodeName = nodeNames.get(j);
+//	    			for (int i=0; i<=node.get(j).getN();i++) {
+//	    				if(!node.get(j).getC(i).isLeaf()) {
+//	    					tmpnode.add(node.get(j).getC(i));
+//	    					tmpNames.add("node"+String.valueOf(index));}
+//			    		relation.add(nodeName+":f"+2*i+"->node"+index+";");
+//			    		nodeline.add(writeNode(node.get(j).getC(i), "node"+String.valueOf(index)));
+//			    		index++;
+//			    	}
+//	    		}
+//	    		node = tmpnode;
+//	    		nodeNames= tmpNames;
+//	    	}
+//    	return relation;
     }
     /**
 	 * This method returns a ArrayList<String> containing the output B-Tree.
@@ -514,9 +534,8 @@ public class B_Tree {
     	ArrayList<String> ret = new ArrayList<>();
     	ret.add("digraph{");
     	ret.add("node[shape=record];");
-    List<B_TreeNode> nodelist = new ArrayList<>();
-    nodelist.add(this.root);
-    ArrayList<String> relation =getB_TreeNode( ret, nodelist, 2);
+    this.index=1;
+    ArrayList<String> relation =getB_TreeNode( ret, this.root);
     	ret.addAll(relation);
     ret.add("}");
     	return ret;
@@ -609,7 +628,8 @@ public class B_Tree {
     public static void main(String[] args) {
     		B_Tree b = new B_Tree(2);
 		b.constructB_TreeFromFile("TestFile1.txt");
-		b.delete("L2Z7499YH");
+		b.getInorderTraversal().forEach(x->System.out.println(x));
+//		b.delete("L2Z7499YH");
 //		b.delete("FMF1QTZ0Q");
 //		b.delete("L2Z74TZ0Q");
 		b.getB_Tree().forEach(x->System.out.println(x));;
