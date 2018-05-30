@@ -69,6 +69,7 @@ public class B_Tree {
 			String line;	
 			while ((line = in.readLine()) != null) {
 				String[] ls = line.split(";");
+				
 				if(insert(new Entry(ls[0], ls[1], ls[2]))) insertSucc++;
 				
 			}
@@ -98,6 +99,7 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
+    	System.out.println(insertEntry);
     		if (getInorderTraversal().stream().anyMatch(x->(x.compareTo(insertEntry)==0))) return false;
     		B_TreeNode r = this.root;
     		if (r.getN() == 2*this.t-1) {
@@ -116,19 +118,22 @@ public class B_Tree {
     
     private void insertNonFull(B_TreeNode x, Entry k) {
 		// TODO Auto-generated method stub
-	    	int i = x.getN()-1;
+	    	
 	    	if (x.isLeaf()) {
-	    		while(i>=0 && k.compareTo(x.getKey(i))<0) {
-	    			x.setKey(i+1, x.getKey(i));
-	    			i--;
-	    		}
-	    		x.setKey(i+1, k);
+	    		int i= getIndexNL(0, x, k.getKey());
+//	    		while(i>=0 && k.compareTo(x.getKey(i))<0) {
+//	    			x.setKey(i+1, x.getKey(i));
+//	    			i--;
+//	    		}
+//	    		x.setKey(i+1, k);
+	    		x.getAllKey().add(i, k);
 	    		x.setN(x.getN()+1);
 	    	}else {
-	    		while(i>=0 && k.compareTo(x.getKey(i))<0) {
-	    			i--;
-	    		}
-	    		i++;
+	    		int i= getIndexNL(0, x, k.getKey());
+//	    		while(i>=0 && k.compareTo(x.getKey(i))<0) {
+//	    			i--;
+//	    		}
+//	    		i++;
 	    		if(x.getC(i).getN()==2*this.t-1) {
 	    			splitChild(x, i);
 	    			if(k.compareTo(x.getKey(i))>0) {
@@ -146,13 +151,13 @@ public class B_Tree {
 		B_TreeNode y= x.getC(i);
 		z.setLeaf(y.isLeaf());
 		z.setN(t-1);
-		z.getAllKey().addAll(y.getAllKey().subList(t,y.getAllKey().size()-1));
+		z.getAllKey().addAll(y.getAllKey().subList(t,y.getAllKey().size()));
 		
 //		for(int j=0; j<t-1; j++) {
 //			z.setKey(j, y.getKey(j+t));
 //		}
 		if(!y.isLeaf()) {
-			z.getAllc().addAll(y.getAllc().subList(t, y.getAllc().size()-1));
+			z.getAllc().addAll(y.getAllc().subList(t, y.getAllc().size()));
 //			for(int j=0;j<t;j++) {
 //				z.setC(j, y.getC(j+t));
 //			}
@@ -664,9 +669,10 @@ public class B_Tree {
     }
     public static void main(String[] args) {
     	B_Tree b = new B_Tree(2);
-		b.constructB_TreeFromFile("TestFile1.txt");
-		ArrayList<String> out = b.getB_Tree();
-		out.forEach(x->System.out.println(x));
+		b.constructB_TreeFromFile("TestFile3.txt");
+		b.getInorderTraversal().forEach(x->System.out.println(x));
+//		ArrayList<String> out = b.getB_Tree();
+//		out.forEach(x->System.out.println(x));
 	}
     
 }
