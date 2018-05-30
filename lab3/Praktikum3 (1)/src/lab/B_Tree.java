@@ -26,11 +26,6 @@ public class B_Tree {
 	private B_TreeNode root;
 	private int t;
 	
-	//--------------调试用---------------------
-	
-	
-	
-	//--------------调试用---------------------
     /**
 	* The constructor
 	* 
@@ -210,6 +205,7 @@ public class B_Tree {
     				Entry delEntry = x.getKey(ki);
     				while(ki<x.getN()-1) {
     					x.setKey(ki, x.getKey(ki+1));
+    					ki++;
     				}
     				x.setN(x.getN()-1);
     				//delete finished
@@ -393,7 +389,7 @@ public class B_Tree {
 		//middle:
 		x.setKey(ci3, firstKeyRight);
 		//right:
-		for(int i=0;i<right.getN();i++) {
+		for(int i=0;i<right.getN()-1;i++) {
 			right.setKey(i, right.getKey(i+1));
 			right.setC(i, right.getC(i+1));
 		}
@@ -407,11 +403,11 @@ public class B_Tree {
 		Entry y = x.getKey(ci3-1); //y
 		Entry lastKeyLeft= left.getKey(left.getN()-1); // x
 		//right:
-		for(int i=0;i<right.getN();i++) {
+		right.setC(right.getN()+1, right.getC(right.getN()));
+		for(int i=right.getN()-1;i>=0;i--) {
 			right.setKey(i+1, right.getKey(i));
 			right.setC(i+1, right.getC(i));
 		}
-		right.setC(right.getN(), right.getC(right.getN()-1));
 		right.setKey(0, y);
 		right.setC(0, left.getC(left.getN()));
 		right.setN(right.getN()+1);
@@ -645,13 +641,4 @@ public class B_Tree {
     }
     
     
-    public static void main(String[] args) {
-    		B_Tree b = new B_Tree(2);
-		b.constructB_TreeFromFile("TestFile1.txt");
-//		b.getInorderTraversal().forEach(x->System.out.println(x));
-		b.delete("L2Z7499YH");
-		b.delete("FMF1QTZ0Q");
-//		b.delete("L2Z74TZ0Q");
-		b.getB_Tree().forEach(x->System.out.println(x));;
-	}
 }
