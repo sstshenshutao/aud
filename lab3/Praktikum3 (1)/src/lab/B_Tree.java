@@ -628,8 +628,8 @@ public class B_Tree {
     public static void main(String[] args) {
     		B_Tree b = new B_Tree(2);
 		b.constructB_TreeFromFile("TestFile1.txt");
-		b.getInorderTraversal().forEach(x->System.out.println(x));
-//		b.delete("L2Z7499YH");
+//		b.getInorderTraversal().forEach(x->System.out.println(x));
+		b.delete("L2Z7499YH");
 //		b.delete("FMF1QTZ0Q");
 //		b.delete("L2Z74TZ0Q");
 		b.getB_Tree().forEach(x->System.out.println(x));;
