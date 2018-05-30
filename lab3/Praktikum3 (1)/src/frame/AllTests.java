@@ -323,6 +323,13 @@ public class AllTests {
 			b.delete("L2Z74TZ0Q");
 			ArrayList<String> out = b.getB_Tree();
 			constractB_Tree(out);
+			out.forEach(x->System.out.println(x));
+			int iiii=0;
+			for(TestNode n: nodes) {
+				System.out.println("node"+iiii);
+				iiii++;
+				n.getEntries().forEach(x->System.out.println(x));
+			}
 			testNode("root", nodes.get(0), 2, 3, "E465LZPOESSG24YXB1", 2, 3, "GFV8X4TT0SSG24YXB1");
 			testNode("node" + 1, nodes.get(1), 2, 3, "4OVZBRS9F9BTCH8AHW", 2, 3, "4OVZBRS9FDP56R7OTD");
 			testNode("node" + 2, nodes.get(2), 2, 0, "14ST01GLP319BCWVH9");

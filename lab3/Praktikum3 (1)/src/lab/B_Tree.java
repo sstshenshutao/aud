@@ -330,6 +330,7 @@ public class B_Tree {
 		}
 		left.setC(2*t-1, right.getC(t-1));
 		//-------
+		left.setN(2*t-1);
 		x.setC(ci3, left);
 	}
 	private void merge(int ci3, B_TreeNode x) {
@@ -355,6 +356,7 @@ public class B_Tree {
 		}
 		left.setC(2*t-1, right.getC(t-1));
 		//-------
+		left.setN(2*t-1);
 		x.setC(ci3-1, left);
 	}
 
