@@ -1,7 +1,11 @@
 package lab;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import frame.*;
 
@@ -21,7 +25,11 @@ public class B_Tree {
 	private B_TreeNode tree;
 	private B_TreeNode root;
 	private int t;
+
+	//------调试-----
+	private int tsa=0;
 	
+	//----end调试---
     /**
 	* The constructor
 	* 
@@ -71,7 +79,10 @@ public class B_Tree {
 				String[] ls = line.split(";");
 				
 				if(insert(new Entry(ls[0], ls[1], ls[2]))) insertSucc++;
-				
+//				System.out.println("------getInorderTraversal--------");
+//				getInorderTraversal().forEach(x->System.out.println(x));
+//				System.out.println("--------getInorderTraversal end-------");
+//				printTree();
 			}
 			in.close();
 			fr.close();
@@ -99,7 +110,7 @@ public class B_Tree {
         /**
          * Add your code here
     	   */
-    	System.out.println(insertEntry);
+//    	System.out.println("tsa:"+tsa+"|"+insertEntry);
     		if (getInorderTraversal().stream().anyMatch(x->(x.compareTo(insertEntry)==0))) return false;
     		B_TreeNode r = this.root;
     		if (r.getN() == 2*this.t-1) {
@@ -151,24 +162,26 @@ public class B_Tree {
 		B_TreeNode y= x.getC(i);
 		z.setLeaf(y.isLeaf());
 		z.setN(t-1);
+		z.getAllKey().clear();
 		z.getAllKey().addAll(y.getAllKey().subList(t,y.getAllKey().size()));
 		
 //		for(int j=0; j<t-1; j++) {
 //			z.setKey(j, y.getKey(j+t));
 //		}
 		if(!y.isLeaf()) {
+			z.getAllc().clear();
 			z.getAllc().addAll(y.getAllc().subList(t, y.getAllc().size()));
 //			for(int j=0;j<t;j++) {
 //				z.setC(j, y.getC(j+t));
 //			}
 		}
 		y.setN(t-1);
-		x.setC(i+1, z);
+		x.getAllc().add(i+1, z);
 //		for(int j = x.getN(); j>i; j--) {
 //			x.setC(j+1,x.getC(j));
 //		}
 //		x.setC(i+1, z);
-		x.setKey(i, y.getKey(t-1));
+		x.getAllKey().add(i, y.getKey(t-1));
 //		for (int j=x.getN()-1;j>i-1;j--) {
 //			x.setKey(j+1, x.getKey(j));
 //		}
@@ -208,7 +221,7 @@ public class B_Tree {
     				//delete key from x
     				int ki=getIndexNL(0, x ,key);
     				Entry delEntry = x.getKey(ki);
-    				x.getAllKey().remove(ki);
+    				x.removeKey(ki);
     				x.setN(x.getN()-1);
 //    				while(ki<x.getN()-1) {
 //    					x.setKey(ki, x.getKey(ki+1));
@@ -239,12 +252,12 @@ public class B_Tree {
     				//2.c hebing
     				else {
     					Entry ki = x.getKey(ci2);
-    					x.getAllKey().remove(ci2);
+    					x.removeKey(ci2);
 //    					//key forward
 //    					for(int i=ci2; i<x.getN()-1;i++) {
 //    						x.setKey(i, x.getKey(i+1));
 //    					}
-    					x.getAllc().remove(ci2+1);
+    					x.removeC(ci2+1);
 //    					c forward
 //    					for(int i=ci2+1; i<x.getN();i++) {
 //    						x.setC(i, x.getC(i+1));
@@ -346,12 +359,12 @@ public class B_Tree {
 		B_TreeNode left= x.getC(ci3);
 		B_TreeNode right= x.getC(ci3+1);
 			Entry kNode =x.getKey(ci3);
-			x.getAllKey().remove(ci3);
+			x.removeKey(ci3);
 			//		//xkey forward
 //		for(int i=ci3; i<x.getN()-1;i++) {
 //			x.setKey(i, x.getKey(i+1));
 //		}
-			x.getAllc().remove(ci3+1);
+			x.removeC(ci3+1);
 		//xc forward
 //		for(int i=ci3+1; i<x.getN();i++) {
 //			x.setC(i, x.getC(i+1));
@@ -375,12 +388,12 @@ public class B_Tree {
 		B_TreeNode left= x.getC(ci3-1);
 		B_TreeNode right= x.getC(ci3);
 			Entry kNode =x.getKey(ci3-1);
-			x.getAllKey().remove(ci3-1);
+			x.removeKey(ci3-1);
 //		//xkey forward
 //		for(int i=ci3-1; i<x.getN()-1;i++) {
 //			x.setKey(i, x.getKey(i+1));
 //		}
-			x.getAllc().remove(ci3);
+			x.removeC(ci3);
 //		//xc forward
 //		for(int i=ci3; i<x.getN();i++) {
 //			x.setC(i, x.getC(i+1));
@@ -413,8 +426,8 @@ public class B_Tree {
 		//middle:
 		x.setKey(ci3, firstKeyRight);
 		//right:
-		right.getAllKey().remove(0);
-		right.getAllc().remove(0);
+		right.removeKey(0);
+		right.removeC(0);
 //		for(int i=0;i<right.getN()-1;i++) {
 //			right.setKey(i, right.getKey(i+1));
 //			right.setC(i, right.getC(i+1));
@@ -667,12 +680,43 @@ public class B_Tree {
     			return a;
     		}
     }
+    public void printTree() {
+    	FileWriter fw=null;
+		try {
+			fw = new FileWriter("tstreedel_"+tsa);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	PrintWriter wr= new PrintWriter(fw);
+    	getB_Tree().forEach(x->wr.println(x));
+    	tsa++;
+    	wr.close();
+    	try {
+			fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	String commands = "/usr/local/Cellar/graphviz/2.40.1/bin/dot -Tpng -o test"+tsa+".png "+"tstreedel_"+tsa;
+    	try {
+			Process process = Runtime.getRuntime().exec (commands);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     public static void main(String[] args) {
     	B_Tree b = new B_Tree(2);
 		b.constructB_TreeFromFile("TestFile3.txt");
-		b.getInorderTraversal().forEach(x->System.out.println(x));
-//		ArrayList<String> out = b.getB_Tree();
-//		out.forEach(x->System.out.println(x));
+		b.delete("L2Z7499YH");
+		b.delete("FMF1QTZ0Q");
+		b.delete("L2Z74TZ0Q");
+//		b.getInorderTraversal().forEach(x->System.out.println(x));
+		ArrayList<String> out = b.getB_Tree();
+		out.forEach(x->System.out.println(x));
+//		b.printTree();
 	}
     
 }

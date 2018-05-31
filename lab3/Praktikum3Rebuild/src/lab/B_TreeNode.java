@@ -64,7 +64,27 @@ public class B_TreeNode {
 	 * @return the c
 	 */
 	public B_TreeNode getC(int index) {
-		return this.c.get(index);
+		if (index>=this.c.size()) {
+			return null;
+		}else {
+		return this.c.get(index);}
+		
+	}
+	public Entry removeKey(int index) {
+		if (index<this.key.size()) {
+			return this.key.remove(index);
+		}else {
+			return null;
+			//donothing
+		}
+		
+	}
+	public B_TreeNode removeC(int index) {
+		if (index<this.c.size()) {
+			return this.c.remove(index);
+		}else {
+			return null;
+		}
 	}
 	/**
 	 * @return the leaf
@@ -99,6 +119,7 @@ public class B_TreeNode {
 		}else if(index== this.c.size()) {
 			this.c.add(c);
 		}else {
+			//donothing because of leaf!
 			System.out.println("setC index wrong!!!");
 		}
 	}
