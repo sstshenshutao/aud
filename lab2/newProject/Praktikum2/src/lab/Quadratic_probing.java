@@ -28,11 +28,10 @@ public class Quadratic_probing implements CollisionResolution {
 		return (ret<0)? ret+k : ret ;
 	}
 	
-//	public static void main(String[] args) {
-//		for(int i=0;i<10;i++) {
-//			int ret = ((int)(5 - (Math.ceil(Math.pow((double)i/2, 2))) * Math.pow(-1, i))) % 10;
-//			System.out.println((ret<0)? ret+10 : ret);  
-//		}
-//	}
+	public static void main(String[] args) {
+		Quadratic_probing a = new  Quadratic_probing();
+		for(int i =482; i<484;i++) {
+		System.out.println(a.getNext(new Entry("ABCDE","AJQA","OK"),5101,i, 9661));}
+	}
 
 }

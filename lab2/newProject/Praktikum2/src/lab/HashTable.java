@@ -1,7 +1,14 @@
 package lab;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,6 +107,8 @@ public class HashTable {
 			while ((line = in.readLine()) != null) {
 				String[] ls = line.split(";");
 				insert(new Entry(ls[0], ls[1], ls[2]));
+//				//调试用
+//				printTree();
 			}
 			in.close();
 			fr.close();
@@ -129,11 +138,6 @@ public class HashTable {
 		//if exist:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if(Arrays.stream(this.hashEntry).anyMatch(e -> ((e!=null && e.compareTo(insertEntry) == 0)? true : false))) 
 			return false;
-		
-		ArrayList<Integer> a=null;
-		List <Integer> b = a.stream().filter(x -> x<0).collect(Collectors.toList());
-		int[] c = a.stream().mapToInt(x -> x.intValue()).toArray();
-		
 		
 		//insert with/out collisions
 		int address = this.hashFunction.getHash(insertEntry, this.capacity);
@@ -284,15 +288,19 @@ public class HashTable {
 		int pz = getPzLessthan(this.capacity * 10);
 		Entry[] tmp = new Entry[pz];
 		String[] tmpSeq = new String[pz];
-		for(int i=0; i<this.capacity; i++) {
-			if (this.hashEntry[i] == null || this.hashEntry[i].isDeleted()) {
-			}else {
-				insert(this.hashEntry[i]);
-			}		
-		}
+		Entry[] oldHashEntry = this.hashEntry;
+		int oldCapacity=this.capacity;
 		this.hashEntry = tmp;
 		this.insertSequence = tmpSeq;
 		this.capacity= this.hashEntry.length;
+		this.actualUsed=0;
+		for(int i=0; i<oldCapacity; i++) {
+			if (oldHashEntry[i] == null || oldHashEntry[i].isDeleted()) {
+			}else {
+				insert(oldHashEntry[i]);
+			}		
+		}
+		
 	}
 	private int getPzLessthan(int a) {
 		List<Integer> primzahl = new ArrayList<>();  
@@ -307,5 +315,64 @@ public class HashTable {
         return primzahl.get(primzahl.size()-1);
 	}
 	
+	//调试用
+	private int tsa=0;
+	public void printTree() {
+    	FileWriter fw=null;
+		try {
+			fw = new FileWriter("tstree_"+tsa);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	PrintWriter wr= new PrintWriter(fw);
+    	getHashTable().forEach(x->wr.println(x));
+    	tsa++;
+    	wr.close();
+    	try {
+			fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	String commands = "/usr/local/Cellar/graphviz/2.40.1/bin/dot -Tpng -o test"+tsa+".png "+"tstree_"+tsa;
+    	try {
+			Runtime.getRuntime().exec (commands);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+	
+	
+	private static ArrayList<String> getTestData() {
+		ArrayList<String> testData = new ArrayList<>();
+		String keyPrefix = "ABCDEA";
+		for (char c1 = 'A'; c1 != 'Z'; c1++) {
+			for (char c2 = 'A'; c2 != 'Z'; c2++) {
+				for (char c3 = 'A'; c3 != 'C'; c3++) {
+					testData.add(keyPrefix + c1 + c2 + c3);
+				}
+			}
+		}
+		return testData;
+	}
+	public static void main(String[] args) {
+		
+		String testkey = "ABCDEAJQA";
+		String KeyAtHomePosition = "ABCDEACLB";
+		HashTable table = new HashTable(10, "mid_square", "quadratic_probing");
+		List <String >testData=getTestData();
+		for (String s : testData) {
+			Entry e = new Entry();
+			e.setKey(s);
+			e.setData("ok");
+			table.insert(e);
+		}
+		ArrayList<String> dot = table.getHashTable();
+		dot.forEach(x->System.out.println(x));
+//		ABCDEAJQA
+		
+	}
 
 }

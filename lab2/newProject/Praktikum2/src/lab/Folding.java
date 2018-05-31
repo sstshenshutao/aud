@@ -39,22 +39,29 @@ public class Folding implements HashFunction {
 			s = zero+s;
 		}
 		//split
-//		System.out.println(x.getKey()+"|AScii:"+s);
+//		System.out.print(x.getKey()+"|AScii:"+s);
 		int num1=0;
 		for(int i=s.length()/length; i>0; i--) {
+//			System.out.print("|"+((i%2==(s.length()/length)%2)?
+//					new StringBuilder(s.substring(length*(i-1), length*i)).reverse().toString():
+//						s.substring(length*(i-1), length*i)));
+			
 			num1+=Integer.parseInt((i%2==(s.length()/length)%2)?
 					new StringBuilder(s.substring(length*(i-1), length*i)).reverse().toString():
 						s.substring(length*(i-1), length*i));
 		}
+		
 		int xxx = 10;
 		for(int i=1;i<length;i++) {
-			xxx*=xxx;
+			xxx*=10;
 		}
 		
 		if (getlength(num1)>length) {
 			
 			num1 = num1 % xxx;
 		}
+//		System.out.print("|"+xxx);
+//		System.out.print("\n");
 		return (num1>=k)? num1%k : num1;
 	}
 	
