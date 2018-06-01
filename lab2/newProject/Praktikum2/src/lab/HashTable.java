@@ -1,14 +1,7 @@
 package lab;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,14 +47,6 @@ public class HashTable {
 		/**
 		 * Add your code here
 		 */
-//		try {
-//			Class<?> hfClazz = Class.forName("lab."+hashFunction.substring(0, 1).toUpperCase()+hashFunction.substring(1));
-//			this.hashFunction = (HashFunction) hfClazz.getDeclaredConstructor().newInstance();
-//			Class<?> crClazz = Class.forName("lab."+collisionResolution.substring(0, 1).toUpperCase()+collisionResolution.substring(1));
-//			this.collisionResolution = (CollisionResolution) crClazz.getDeclaredConstructor().newInstance();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 		switch(hashFunction) {
 			case "division": this.hashFunction = new Division(); break;
 			case "folding": this.hashFunction = new Folding(); break;
@@ -107,13 +92,10 @@ public class HashTable {
 			while ((line = in.readLine()) != null) {
 				String[] ls = line.split(";");
 				insert(new Entry(ls[0], ls[1], ls[2]));
-//				//调试用
-//				printTree();
 			}
 			in.close();
 			fr.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return this.actualUsed;
@@ -136,15 +118,13 @@ public class HashTable {
 		 * Add your code here
 		 */
 		
-		//if exist:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//if exist
 		if(Arrays.stream(this.hashEntry).anyMatch(e -> ((e!=null && e.compareTo(insertEntry) == 0)? true : false))) 
 			return false;
 		
 		//insert with/out collisions
 		int address = this.hashFunction.getHash(insertEntry, this.capacity);
 		
-//		System.out.println("insert:" +insertEntry.getKey()+"|address:"+address+ "|"+
-//				this.hashFunction.getClass().toString()+"|capacity:"+this.capacity );
 		if (this.hashEntry[address] == null || this.hashEntry[address].isDeleted() == true) {
 			this.hashEntry[address] = insertEntry;
 			actualUsed++;
@@ -156,11 +136,6 @@ public class HashTable {
 			for(int i=1; true; i++) {
 				//use collisionfunction to get the next address.
 				int addressc = this.collisionResolution.getNext(insertEntry, address, i, this.capacity);
-				
-//				System.out.println("insertCollision:" +insertEntry.getKey()+"|address:"+addressc+ "|"+
-//						this.collisionResolution.getClass().toString()+"|capacity:"+this.capacity +"|record:"+record );
-				
-//				if (lastTern.contains(addressc)) continue;
 				if (this.hashEntry[addressc] == null || this.hashEntry[addressc].isDeleted() == true) {
 					this.hashEntry[addressc] = insertEntry;
 					this.insertSequence[addressc] = record; 
@@ -172,7 +147,7 @@ public class HashTable {
 				}
 			}
 		}
-		//rehash
+		//check rehash
 		if (this.actualUsed > this.capacity * 0.75) {
 			rehash();
 		}
@@ -195,7 +170,6 @@ public class HashTable {
 		 */
 		Entry del = find(deleteKey);
 		del.markDeleted();
-//		actualUsed--;
 		return del;
 	}
 
@@ -310,67 +284,6 @@ public class HashTable {
             }
 		}
         return primzahl.get(primzahl.size()-1);
-	}
-	
-	//调试用
-	private int tsa=0;
-	public void printTree() {
-    	FileWriter fw=null;
-		try {
-			fw = new FileWriter("tstree_"+tsa);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	PrintWriter wr= new PrintWriter(fw);
-    	getHashTable().forEach(x->wr.println(x));
-    	tsa++;
-    	wr.close();
-    	try {
-			fw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	String commands = "/usr/local/Cellar/graphviz/2.40.1/bin/dot -Tpng -o test"+tsa+".png "+"tstree_"+tsa;
-    	try {
-			Runtime.getRuntime().exec (commands);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-	
-	
-	private static ArrayList<String> getTestData() {
-		ArrayList<String> testData = new ArrayList<>();
-		String keyPrefix = "ABCDEA";
-		for (char c1 = 'A'; c1 != 'Z'; c1++) {
-			for (char c2 = 'A'; c2 != 'Z'; c2++) {
-				for (char c3 = 'A'; c3 != 'C'; c3++) {
-					testData.add(keyPrefix + c1 + c2 + c3);
-				}
-			}
-		}
-		return testData;
-	}
-	public static void main(String[] args) {
-		
-		String testkey = "ABCDEAJQA";
-		String KeyAtHomePosition = "ABCDEACLB";
-		HashTable table = new HashTable(10, "mid_square", "quadratic_probing");
-		List <String >testData=getTestData();
-		for (String s : testData) {
-			Entry e = new Entry();
-			e.setKey(s);
-			e.setData("ok");
-			table.insert(e);
-		}
-		ArrayList<String> dot = table.getHashTable();
-		dot.forEach(x->System.out.println(x));
-//		ABCDEAJQA
-		
-		
 	}
 
 }
