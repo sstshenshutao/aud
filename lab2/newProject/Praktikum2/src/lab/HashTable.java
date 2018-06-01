@@ -135,6 +135,7 @@ public class HashTable {
 		/**
 		 * Add your code here
 		 */
+		
 		//if exist:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		if(Arrays.stream(this.hashEntry).anyMatch(e -> ((e!=null && e.compareTo(insertEntry) == 0)? true : false))) 
 			return false;
@@ -147,37 +148,33 @@ public class HashTable {
 		if (this.hashEntry[address] == null || this.hashEntry[address].isDeleted() == true) {
 			this.hashEntry[address] = insertEntry;
 			actualUsed++;
-			//rehash
-			if (this.actualUsed + 1 > this.capacity * 0.75) {
-				rehash();
-			}
 		}else {
 			//collisions!!!
 			String record = Integer.toString(address);
 			ArrayList<Integer> lastTern = new ArrayList<>();
 			lastTern.add(address);
-			for(int i=1; i< this.capacity; i++) {
+			for(int i=1; true; i++) {
 				//use collisionfunction to get the next address.
 				int addressc = this.collisionResolution.getNext(insertEntry, address, i, this.capacity);
 				
 //				System.out.println("insertCollision:" +insertEntry.getKey()+"|address:"+addressc+ "|"+
 //						this.collisionResolution.getClass().toString()+"|capacity:"+this.capacity +"|record:"+record );
 				
-				if (lastTern.contains(addressc)) continue;
+//				if (lastTern.contains(addressc)) continue;
 				if (this.hashEntry[addressc] == null || this.hashEntry[addressc].isDeleted() == true) {
 					this.hashEntry[addressc] = insertEntry;
 					this.insertSequence[addressc] = record; 
 					actualUsed++;
-					//rehash
-					if (this.actualUsed + 1 > this.capacity * 0.75) {
-						rehash();
-					}
 					break;
 				}else {
 					record += "," + addressc;
 					lastTern.add(addressc);
 				}
 			}
+		}
+		//rehash
+		if (this.actualUsed > this.capacity * 0.75) {
+			rehash();
 		}
 		return true;
 	}
@@ -198,7 +195,7 @@ public class HashTable {
 		 */
 		Entry del = find(deleteKey);
 		del.markDeleted();
-		actualUsed--;
+//		actualUsed--;
 		return del;
 	}
 
@@ -372,6 +369,7 @@ public class HashTable {
 		ArrayList<String> dot = table.getHashTable();
 		dot.forEach(x->System.out.println(x));
 //		ABCDEAJQA
+		
 		
 	}
 
