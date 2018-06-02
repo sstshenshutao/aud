@@ -525,26 +525,31 @@ public class B_Tree {
 	    	linen+=("<f"+(node.getN()*2)+">*\"];");
 	    return linen;
     }
-    private int index=0;
-    private ArrayList<String> getB_TreeNode(ArrayList<String> a, B_TreeNode node) {
+    
+    private DoubleArrayList<String> getB_TreeNode(DoubleArrayList<String> dl, B_TreeNode node , IntegerRef index) {
 		String nodeName;	
-		if (index ==1 ) {
+		//first node    second relation
+		if (index.a ==1 ) {
 			nodeName="root";}
 		else {
-			nodeName="node"+String.valueOf(index);
+			nodeName="node"+String.valueOf(index.a);
 		}
-		a.add(writeNode(node, nodeName));
-		ArrayList<String> r= new ArrayList<>();
+		DoubleArrayList<String> dltmp =new DoubleArrayList<>();
+		dltmp.first.add(writeNode(node, nodeName));// 写出当前节点
 		ArrayList<String> k= new ArrayList<>();
-		index++;
-		if(!node.isLeaf()) {
+		index.addOne();
+		if(!node.isLeaf()) {//如果不是叶节点，递归写出子节点和关系
+			//先写guan xi
 			for(int i=0;i<=node.getN();i++) {
-				r.add(nodeName+":f"+2*i+"->node"+index+";");
-				k.addAll(getB_TreeNode(a,node.getC(i)));
+				k.add(nodeName+":f"+2*i+"->node"+index.a+";");//写出关系
+				DoubleArrayList<String> a =getB_TreeNode(dltmp,node.getC(i),index);
+				dltmp.first.addAll(a.first);
+				k.addAll(a.second);//写出节点
 			}
-			r.addAll(k);
+			dltmp.second.addAll(k);
 		}
-    		return r;
+		return dltmp;
+    		
     	
     	
 //    	String nodeName=	"root";
@@ -591,13 +596,21 @@ public class B_Tree {
     	ArrayList<String> ret = new ArrayList<>();
     	ret.add("digraph{");
     	ret.add("node[shape=record];");
-    this.index=1;
-    ArrayList<String> relation =getB_TreeNode( ret, this.root);
-    	ret.addAll(relation);
+    	DoubleArrayList<String> dl = new DoubleArrayList<>();
+    	dl =getB_TreeNode( dl, this.root,new IntegerRef());
+    	ret.addAll(dl.first);
+    	ret.addAll(dl.second);
     ret.add("}");
     	return ret;
     }
-
+    private class DoubleArrayList<T> {
+    	public ArrayList<T> first;
+    	public ArrayList<T> second;  
+    	public DoubleArrayList(){
+    		first= new ArrayList<>();
+    		second= new ArrayList<>();
+    	}
+    }
     /**
 	 * This method returns the height of the B-Tree
        * If the B-Tree is empty this method should return 0.
@@ -707,16 +720,19 @@ public class B_Tree {
 		}
     }
     
+    
     public static void main(String[] args) {
     	B_Tree b = new B_Tree(2);
-		b.constructB_TreeFromFile("TestFile3.txt");
-		b.delete("L2Z7499YH");
-		b.delete("FMF1QTZ0Q");
-		b.delete("L2Z74TZ0Q");
-//		b.getInorderTraversal().forEach(x->System.out.println(x));
+		b.constructB_TreeFromFile("TestFile1.txt");
+		
 		ArrayList<String> out = b.getB_Tree();
 		out.forEach(x->System.out.println(x));
 //		b.printTree();
 	}
-    
+  private class IntegerRef {
+	  public int a=1;
+	  public void addOne(){
+		  a++;
+	  }
+  }
 }

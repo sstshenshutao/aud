@@ -107,7 +107,7 @@ public class B_TreeNode {
 			}else if(index==this.key.size()){
 				this.key.add(entry);
 			}else {
-				System.out.println("setkey index wrong!!!");
+//				System.out.println("setkey index wrong!!!");
 			}
 	}
 	/**
@@ -120,7 +120,7 @@ public class B_TreeNode {
 			this.c.add(c);
 		}else {
 			//donothing because of leaf!
-			System.out.println("setC index wrong!!!");
+//			System.out.println("setC index wrong!!!");
 		}
 	}
 		
