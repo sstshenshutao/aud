@@ -130,7 +130,8 @@ public class HashTable {
 			actualUsed++;
 		}else {
 			//collisions!!!
-			String record = Integer.toString(address);
+			StringBuilder record = new StringBuilder();
+			record.append(address);
 			ArrayList<Integer> lastTern = new ArrayList<>();
 			lastTern.add(address);
 			for(int i=1; true; i++) {
@@ -138,11 +139,12 @@ public class HashTable {
 				int addressc = this.collisionResolution.getNext(insertEntry, address, i, this.capacity);
 				if (this.hashEntry[addressc] == null || this.hashEntry[addressc].isDeleted() == true) {
 					this.hashEntry[addressc] = insertEntry;
-					this.insertSequence[addressc] = record; 
+					this.insertSequence[addressc] = record.toString(); 
 					actualUsed++;
 					break;
 				}else {
-					record += "," + addressc;
+					record.append(",");
+					record.append(addressc);
 					lastTern.add(addressc);
 				}
 			}
