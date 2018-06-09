@@ -130,7 +130,7 @@ public class HashTable {
 			actualUsed++;
 		}else {
 			//collisions!!!
-			StringBuilder record = new StringBuilder();
+			StringBuffer record = new StringBuffer();
 			record.append(address);
 			ArrayList<Integer> lastTern = new ArrayList<>();
 			lastTern.add(address);
