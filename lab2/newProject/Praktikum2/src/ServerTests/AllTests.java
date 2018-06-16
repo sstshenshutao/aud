@@ -21,7 +21,7 @@ public class AllTests {
 	private Duration timeout = Duration.ofMillis(350);
 	private Duration largeAddressTimeout = Duration.ofMillis(6500);
 	private static ArrayList<String> testData;
-
+	private static HashTable table;
 	private int[] getAdresses(ArrayList<String> table, String key) {
 
 		for (String line : table) {
@@ -125,6 +125,13 @@ public class AllTests {
 	@BeforeAll
 	public static void init() {
 		testData = AllTests.getTestData();
+		table = new HashTable(10, "mid_square", "quadratic_probing");
+		for (String s : testData) {
+			Entry e = new Entry();
+			e.setKey(s);
+			e.setData("ok");
+			table.insert(e);
+		}
 	}
 
 	@Test
@@ -143,6 +150,7 @@ public class AllTests {
 			int[] addresses = getAdresses(dot, testkey);
 			int[] addresses2 = getAdresses(dot, KeyAtHomePosition);
 			int tableCapacity = getCapacity(dot);
+		
 			assertEquals(44, addresses.length, "folding error at large addresses");
 			assertEquals(9661, tableCapacity, "Hashtable capacity must be equal to 9661");
 			assertNull(addresses2, "key ABCDEANBA must be at home position");
@@ -170,7 +178,16 @@ public class AllTests {
 			assertNull(addresses2, "key ABCDEALJA must be at home position");
 		});
 	}
+	
+	@Test
+	public void testgetHashTable() {
+		assertTimeoutPreemptively(largeAddressTimeout, () -> {
+			table.getHashTable();
+		});
+	}
 
+	
+	
 	@Test
 	public void testLargeAddressLengths_MidsquareLinear() {
 		assertTimeoutPreemptively(largeAddressTimeout, () -> {

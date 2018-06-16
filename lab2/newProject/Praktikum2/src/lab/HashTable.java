@@ -2,6 +2,9 @@ package lab;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -267,12 +270,16 @@ public class HashTable {
 		this.insertSequence = tmpSeq;
 		this.capacity= this.hashEntry.length;
 		this.actualUsed=0;
+		ArrayList<String> c= new ArrayList<>();
 		for(int i=0; i<oldCapacity; i++) {
 			if (oldHashEntry[i] == null || oldHashEntry[i].isDeleted()) {
 			}else {
+				c.add(i+"|"+oldHashEntry[i].getKey());
 				insert(oldHashEntry[i]);
 			}		
 		}
+		System.out.println("*****-----------------------------------------******");
+		c.forEach(x->System.out.println(x));
 		
 	}
 	private int getPzLessthan(int a) {
@@ -287,5 +294,33 @@ public class HashTable {
 		}
         return primzahl.get(primzahl.size()-1);
 	}
-
+	//调试用
+	  private int tsa=0;
+	  public void printTree() {
+	      FileWriter fw=null;
+	   try {
+	    fw = new FileWriter("tstree_"+tsa);
+	   } catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	   }
+	      PrintWriter wr= new PrintWriter(fw);
+	      getHashTable().forEach(x->wr.println(x));
+	      tsa++;
+	      wr.close();
+	      try {
+	    fw.close();
+	   } catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	   }
+//	      String commands = "/usr/local/Cellar/graphviz/2.40.1/bin/dot -Tpng -o test"+tsa+".png "+"tstree_"+tsa;
+////	      "/usr/local/Cellar/graphviz/2.40.1/bin/dot -Tpng -o test0.png tstree_0
+//	      try {
+//	    Runtime.getRuntime().exec (commands);
+//	   } catch (IOException e) {
+//	    // TODO Auto-generated catch block
+//	    e.printStackTrace();
+//	   }
+	     }
 }

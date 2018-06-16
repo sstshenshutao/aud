@@ -1,6 +1,9 @@
 package lab;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
+
 
 /**
  * The class Navigation finds the shortest (and/or) path between points on a map
@@ -17,7 +20,8 @@ public class Navigation {
 	public static final int DESTINATION_NOT_FOUND = -2;
 	public static final int SOURCE_DESTINATION_NOT_FOUND = -3;
 	public static final int NO_PATH = -4;
-
+	
+	audMap myMap;
 	/**
 	 * The constructor takes a filename as input, it reads that file and fill
 	 * the nodes and edges Lists with corresponding node and edge objects
@@ -27,7 +31,94 @@ public class Navigation {
 	 */
 	public Navigation(String filename) {
 		//TODO Add you code here
+		myMap = new AdjazenzlistMap();
+		readFiletoMap(filename);
 
+	}
+	private void readFiletoMap(String filename) {
+		//this I/O Operation is referred from lab 1.
+		FileReader fr;
+		int a=0; 
+		try {
+			fr = new FileReader(filename);
+			BufferedReader in = new BufferedReader(fr);
+			String line;	
+			while ((line = in.readLine()) != null) {
+				System.out.println(a++);
+				AudMapElement l = parselineDigraph(line);
+				if(l.eleType==2) {
+					Edge e = new AdjazenzlistEdge();
+					e.add(l.vFrom, l.vTo);
+					this.myMap.addEdge(e);
+					this.myMap.addDistance(e, l.distance);
+					this.myMap.addSpeedLimit(e, l.speed);
+				}else if(l.eleType == 1) {
+					Vertex v = new Vertex(l.vFrom);
+					this.myMap.addVertex(v);
+					this.myMap.addWaitTime(v, l.waitTime);
+				}
+
+			}
+			in.close();
+			fr.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	private class AudMapElement {
+		int eleType; //0:nothing, 1:v , 2:e
+		Double distance;
+		Double waitTime;
+		Double speed;
+		String vFrom;
+		String vTo;
+		/**
+		 * @param eleType
+		 * @param distance
+		 * @param waitTime
+		 */
+		public AudMapElement(int eleType) {
+			this.eleType = eleType;
+		}
+	}
+	private AudMapElement parselineDigraph(String line) {
+		int eleType = (line.contains("->"))?2:(line.contains(";"))?1:0;
+		AudMapElement ret=null;
+		if (eleType == 2) {
+			int index = line.indexOf('-');
+			System.out.println("->index:"+index);
+			String firstV = line.substring(0, index).trim();
+			System.out.println("firstV:"+firstV);
+			int index2 = line.indexOf('[');
+			String secondV = line.substring(index+2, index2).trim();
+			System.out.println("decondV:"+secondV);
+			index = line.indexOf('"');
+			index2 = line.indexOf('"',index+1);
+			String [] ds= line.substring(index+1, index2).trim().split(",");
+			Double distance =Double.parseDouble(ds[0].trim());
+			Double speed =Double.parseDouble(ds[1].trim());
+			ret =new AudMapElement(eleType);
+			ret.distance= distance;
+			ret.speed= speed;
+			ret.vFrom=firstV;
+			ret.vTo=secondV;
+					
+		}else if(eleType == 1) {
+			int index = line.indexOf('[');
+			String firstV = line.substring(0, index).trim();
+			index = line.indexOf('"');
+			int index2 = line.indexOf('"',index+1);
+			String [] vw= line.substring(index+1, index2).trim().split(",");
+			Double waitTime= Double.parseDouble(vw[1].trim());
+			ret =new AudMapElement(eleType);
+			ret.vFrom=firstV;
+			ret.waitTime=waitTime;
+		}else {
+			ret =new AudMapElement(eleType);
+		}
+		return ret;
 	}
 
 	/**
@@ -125,5 +216,11 @@ public class Navigation {
 
 		return ft;
 	}
-
+	public void printMyMap(){
+		this.myMap.toString();
+	}
+	public static void main(String[] args) {
+		Navigation n = new Navigation("TestFile1");
+		n.printMyMap();
+	}
 }
