@@ -3,6 +3,8 @@ package lab;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -21,7 +23,8 @@ public class Navigation {
 	public static final int SOURCE_DESTINATION_NOT_FOUND = -3;
 	public static final int NO_PATH = -4;
 	
-	audMap myMap;
+	private audMap myMap;
+	private HashMap<Edge, Boolean> decoration; 
 	/**
 	 * The constructor takes a filename as input, it reads that file and fill
 	 * the nodes and edges Lists with corresponding node and edge objects
@@ -32,23 +35,23 @@ public class Navigation {
 	public Navigation(String filename) {
 		//TODO Add you code here
 		myMap = new AdjazenzlistMap();
+		decoration =new HashMap<>();
 		readFiletoMap(filename);
 
 	}
 	private void readFiletoMap(String filename) {
 		//this I/O Operation is referred from lab 1.
 		FileReader fr;
-		int a=0; 
+//		int a=0; 
 		try {
 			fr = new FileReader(filename);
 			BufferedReader in = new BufferedReader(fr);
 			String line;	
 			while ((line = in.readLine()) != null) {
-				System.out.println(a++);
+//				System.out.println(a++);
 				AudMapElement l = parselineDigraph(line);
 				if(l.eleType==2) {
-					Edge e = new AdjazenzlistEdge();
-					e.add(l.vFrom, l.vTo);
+					Edge e = new Edge(l.vFrom, l.vTo);
 					this.myMap.addEdge(e);
 					this.myMap.addDistance(e, l.distance);
 					this.myMap.addSpeedLimit(e, l.speed);
@@ -88,12 +91,12 @@ public class Navigation {
 		AudMapElement ret=null;
 		if (eleType == 2) {
 			int index = line.indexOf('-');
-			System.out.println("->index:"+index);
+//			System.out.println("->index:"+index);
 			String firstV = line.substring(0, index).trim();
-			System.out.println("firstV:"+firstV);
+//			System.out.println("firstV:"+firstV);
 			int index2 = line.indexOf('[');
 			String secondV = line.substring(index+2, index2).trim();
-			System.out.println("decondV:"+secondV);
+//			System.out.println("decondV:"+secondV);
 			index = line.indexOf('"');
 			index2 = line.indexOf('"',index+1);
 			String [] ds= line.substring(index+1, index2).trim().split(",");
@@ -121,6 +124,54 @@ public class Navigation {
 		return ret;
 	}
 
+	private void initSingleSource(Vertex s) {
+		for(Vertex v :myMap.getVertices()) {
+			v.setD(Double.MAX_VALUE);
+			v.setPi(null);
+		}
+		myMap.getVertice(s).setD(0);
+	}
+	
+	private void relax(Vertex u, Vertex v, HashMap<Edge, Double> w) {
+		if (myMap.getVertice(v).getD()>(myMap.getVertice(u).getD()+w.get(myMap.getEdge(u, v)))) {
+			myMap.getVertice(v).setD(myMap.getVertice(u).getD()+ w.get(myMap.getEdge(u, v)));
+			myMap.getVertice(v).setPi(myMap.getVertice(u));
+		}
+	}
+	private Vertex extractMin(List<Vertex> cQ) {
+		double min= Double.MAX_VALUE;
+		Vertex minV=null;
+		int index=0;
+		for(int i =0; i<cQ.size();i++) {
+			 
+			if (cQ.get(i).getD()<min) {
+				minV = cQ.get(i);
+				min= cQ.get(i).getD();
+				index = i;
+			}
+		}
+		cQ.remove(index);
+		return minV;
+	}
+	private void dijkstra(HashMap<Edge, Double> w, Vertex s) {
+		initSingleSource(s);
+		List<Vertex> cS = new ArrayList<>(); 
+		List<Vertex> cQ = myMap.copyVertices();
+		while(cQ.size()!=0) {
+			Vertex u = extractMin(cQ);
+			cS.add(u);
+//			System.out.println("u:"+u);
+			if(myMap.getAdj(u)!=null) {
+				for(Vertex v :myMap.getAdj(u)) {
+//					System.out.println("adj:"+v);
+					relax(u, v, w);
+				}
+			}
+		}
+		
+	}
+	
+	
 	/**
 	 * This methods finds the shortest route (distance) between points A and B
 	 * on the map given in the constructor.
@@ -144,8 +195,20 @@ public class Navigation {
 	 */
 	public ArrayList<String> findShortestRoute(String A, String B) {
 		//TODO  Add you code here
-		
-		return new ArrayList<>(); // dummy, replace
+		int flag = findShortestDistance(A,B);
+		decoration = new HashMap<>();
+		if (flag<=0) {
+			
+		}else {
+			Vertex a = myMap.getVertice(new Vertex(A));
+			Vertex b = myMap.getVertice(new Vertex(B));
+			while(!b.getPi().equals(a)) {
+				decoration.put(new Edge(b.getPi(), b), true);
+				b = myMap.getVertice(b.getPi());
+			};
+			decoration.put(new Edge(b.getPi(), b), true);
+		}
+		return writeOutMap();
 	}
 
 	/**
@@ -171,10 +234,39 @@ public class Navigation {
 	 */
 	public ArrayList<String> findFastestRoute(String A, String B) {
 		//TODO Add you code here
-		
-		return new ArrayList<>(); // dummy, replace
+		int flag = findFastestTime(A,B);
+		decoration = new HashMap<>();
+		if (flag<=0) {
+			
+		}else {
+			Vertex a = myMap.getVertice(new Vertex(A));
+			Vertex b = myMap.getVertice(new Vertex(B));
+			while(!b.getPi().equals(a)) {
+				decoration.put(new Edge(b.getPi(), b), true);
+				b = myMap.getVertice(b.getPi());
+			};
+			decoration.put(new Edge(b.getPi(), b), true);
+		}
+		return writeOutMap(); // dummy, replace
 	}
-
+	private HashMap<Edge, Double> getTimeW(String B){
+		HashMap<Edge, Double> distance = myMap.getDistance();
+		HashMap<Edge, Double> speed =myMap.getSpeedLimit();
+		HashMap<Vertex, Double> waittime = myMap.getWaitTime();
+		HashMap<Edge, Double> newW = new HashMap<>();
+		Double waittimeB = waittime.get(new Vertex(B));
+		waittime.replace(myMap.getVertice(new Vertex(B)), 0.0);
+		for(Edge e: distance.keySet()) {
+			Double dis= distance.get(e);
+			Double spe= speed.get(e);
+			Double delay= dis/spe*60;
+			Double wt = waittime.get(e.getTo());
+			Double sumTime =delay+wt;
+			newW.put(e, sumTime);
+		}
+		waittime.replace(myMap.getVertice(new Vertex(B)), waittimeB);
+		return newW;
+	}
 	/**
 	 * Finds the shortest distance in kilometers between A and B using the
 	 * Dijkstra algorithm.
@@ -193,10 +285,27 @@ public class Navigation {
 	public int findShortestDistance(String A, String B) {
 		//TODO Add you code here
 		int sd = 0; 
-
+		if (myMap.getVertice(new Vertex(A))==null && myMap.getVertice(new Vertex(B))==null) {
+			sd = SOURCE_DESTINATION_NOT_FOUND;
+		}else if (myMap.getVertice(new Vertex(A))==null) {
+			sd = SOURCE_NOT_FOUND;
+		}else if (myMap.getVertice(new Vertex(B))==null) {
+			sd =  DESTINATION_NOT_FOUND;
+		}else if (A.equals(B)) {
+			sd = 0;
+		}
+		else{
+			dijkstra(myMap.getDistance(), myMap.getVertice(new Vertex(A)));
+			if(myMap.getVertice(new Vertex(B)).getPi()==null) {
+				sd = NO_PATH;
+			}
+			else {
+				sd= (int)Math.ceil(myMap.getVertice(new Vertex(B)).getD());
+				}
+		}
 		return sd;
 	}
-
+	
 	/**
 	 * Find the fastest route between A and B using the dijkstra algorithm.
 	 * 
@@ -213,14 +322,54 @@ public class Navigation {
 	public int findFastestTime(String pointA, String pointB) {
 		//TODO Add you code here
 		int ft = 0;
-
+		 if (myMap.getVertice(new Vertex(pointB))==null && myMap.getVertice(new Vertex(pointA))==null) {
+				ft = SOURCE_DESTINATION_NOT_FOUND;
+		} else if (myMap.getVertice(new Vertex(pointA))==null) {
+			ft = SOURCE_NOT_FOUND;
+		}else if (myMap.getVertice(new Vertex(pointB))==null) {
+			ft = DESTINATION_NOT_FOUND;
+		}else if (pointA.equals(pointB)) {
+			ft = 0;
+		}else {
+			dijkstra(getTimeW(pointB), myMap.getVertice(new Vertex(pointA)));
+			if(myMap.getVertice(new Vertex(pointB)).getPi()==null) {
+				ft = NO_PATH;
+			}
+			else {
+				ft= (int)Math.ceil(myMap.getVertice(new Vertex(pointB)).getD());
+			}
+		}
 		return ft;
 	}
 	public void printMyMap(){
 		this.myMap.toString();
 	}
-	public static void main(String[] args) {
-		Navigation n = new Navigation("TestFile1");
-		n.printMyMap();
+
+	private ArrayList<String> writeOutMap() {
+		ArrayList<String> ret = new ArrayList<>();
+		ret.add("Digraph");
+		for(Edge e: myMap.getEdges()) {
+			StringBuffer line= new StringBuffer();
+			line.append(e.getFrom().getName()).append(" -> ")
+				.append(e.getTo().getName()).append(" [label=\"")
+				.append(myMap.getDistance().get(e).intValue()).append(",")
+				.append(myMap.getSpeedLimit().get(e).intValue()).append("\"]");
+			if (getDecoration(e))  line.append("[style=bold]");
+			line.append(";");
+			ret.add(line.toString());
+		}
+		for(Vertex v: myMap.getVertices()) {
+			StringBuffer line= new StringBuffer();
+			line.append(v.getName()).append(" [label=\"")
+				.append(v.getName()).append(",")
+				.append(myMap.getWaitTime().get(v).intValue()).append("\"];");
+			ret.add(line.toString());
+		}
+		ret.add("}");
+		return ret;
 	}
+	private boolean getDecoration(Edge e) {
+		return (this.decoration.get(e)!=null)? true: false;
+	}
+
 }
