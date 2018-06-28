@@ -175,12 +175,12 @@ public class MaxFlow {
 		}
 		ArrayList<Edge> p = null;
 		while ((p = cutSuperNode(bfs(getRMap(decoratedMap), s, t))) != null) {
-			p.stream().forEach(x -> System.out.println(x));
+//			p.stream().forEach(x -> System.out.println(x));
 			Integer cp = (int) p.stream()
 					.mapToDouble(x -> this.map.getEdges().contains(x) ? this.map.getC(x) - this.map.getF(x)
 							: this.map.getC(x.getTo(), x.getFrom()))
 					.min().getAsDouble();
-			System.out.println("cp:" + cp);
+//			System.out.println("cp:" + cp);
 			stream += cp;
 			for (Edge e : p) {
 				if (this.map.getEdges().contains(e)) {
