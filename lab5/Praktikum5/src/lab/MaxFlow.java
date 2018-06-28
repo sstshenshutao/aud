@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 public class MaxFlow {
 	private FlowMap map;
+	private FlowMap rMap;
 
 	/**
 	 * Return codes: -1 no source on the map -2 no destination on the map -3 if both
@@ -119,33 +120,90 @@ public class MaxFlow {
 	 */
 	public final int findMaxFlow(final String[] sources, final String[] destinations) {
 		// TODO Add you code here
-		return 0; // dummy, replace
+		FlowMapDecorator decoratedMap = new FlowMapDecorator(this.map, sources, destinations);
+		return fordFulkerson(decoratedMap, decoratedMap.getSuperS(), decoratedMap.getSuperD());
 	}
 
-	private void fordFulkerson(Vertex s, Vertex t) {
-		//init f
-		for(Edge e : this.map.getEdges()) {
+	private ArrayList<Edge> cutSuperNode(ArrayList<Edge> path) {
+		if (path == null)
+			return path;
+		if (path.get(0).getTo().equals(new Vertex("SuperD"))) {
+			// cut destination
+			path.remove(0);
+		}
+		if (path.get(path.size() - 1).getFrom().equals(new Vertex("SuperS"))) {
+			// cut destination
+			path.remove(path.size() - 1);
+		}
+		return path;
+	}
+
+
+	private int fordFulkerson(FlowMapDecorator decoratedMap, Vertex s, Vertex t) {
+		// init f
+		int stream = 0;
+		for (Edge e : this.map.getEdges()) {
 			this.map.setF(e, 0);
 		}
 		ArrayList<Edge> p = null;
-		while((p=bfs(getRMap(this.map),s,t))!=null) {
-//			p.stream().forEach(x->System.out.println(this.map.getC(x)));
-			Integer cp = (int)p.stream().mapToDouble(x->this.map.getC(x)).min().getAsDouble();
-			System.out.println("cp:"+cp);
-			for(Edge e: p) {
+		while ((p = cutSuperNode(bfs(getRMap(decoratedMap), s, t))) != null) {
+			p.stream().forEach(x -> System.out.println(x));
+			Integer cp = (int) p.stream().mapToDouble(
+					x -> this.map.getEdges().contains(x) ? this.map.getC(x) -this.map.getF(x) : this.map.getC(x.getTo(), x.getFrom()))
+					.min().getAsDouble();
+			System.out.println("cp:" + cp);
+			stream += cp;
+			for (Edge e : p) {
 				if (this.map.getEdges().contains(e)) {
-					this.map.setF(e, this.map.getF(e)+cp);
-				}else {
-					this.map.setF(e.getTo(),e.getFrom(), this.map.getF(e.getTo(),e.getFrom())-cp);
+					this.map.setF(e, this.map.getF(e) + cp);
+				} else {
+					this.map.setF(e.getTo(), e.getFrom(), this.map.getF(e.getTo(), e.getFrom()) - cp);
 				}
 			}
 		}
-		
+		return stream;
 	}
 
-	private FlowMap getRMap(FlowMap map2) {
+	private FlowMap getRMap(FlowMapDecorator decoratedMap) {
 		// get the residual network
-		return map2;
+		this.rMap = new FlowMap(new Flow());
+		for (Edge e : decoratedMap.getEdges()) {
+			if (decoratedMap.getF(e) < decoratedMap.getC(e)) {
+				rMap.addEdge(e);
+				rMap.addVertex(e.getFrom());
+				rMap.addVertex(e.getTo());
+			}
+			if (decoratedMap.getF(e) > 0) {
+				rMap.addEdge(new Edge(e.getTo(), e.getFrom()));
+				rMap.addVertex(e.getFrom());
+				rMap.addVertex(e.getTo());
+			}
+		}
+		// System.out.println("---------------dotcode--------------");
+		// toDotCode(rMap,decoratedMap).forEach(x->System.out.println(x));;
+		// System.out.println("---------------end dotcode--------------");
+		return this.rMap;
+	}
+
+	private ArrayList<String> toDotCode(FlowMap oMap) {
+		ArrayList<String> ret = new ArrayList<>();
+		ret.add("digraph {");
+		for (Edge e : oMap.getEdges()) {
+			StringBuffer sb = new StringBuffer();
+			sb.append(e.getFrom().getName());
+			sb.append(" -> ");
+			sb.append(e.getTo().getName());
+			sb.append(" [label=\"");
+			sb.append(oMap.getC(e));
+			sb.append("-");
+			sb.append(oMap.getF(e));
+			sb.append("\"]");
+
+			sb.append((oMap.getC(e) > oMap.getF(e)) ? "[style=bold];" : ";");
+			ret.add(sb.toString());
+		}
+		ret.add("}");
+		return ret;
 	}
 
 	private final String white = "white";
@@ -168,10 +226,12 @@ public class MaxFlow {
 		q.add(rMap.getVertice(s));
 		while (!q.isEmpty()) {
 			Vertex u = q.remove(q.size() - 1);
+			if (rMap.getAdj(u) == null)
+				continue;
 			for (Vertex v : rMap.getAdj(u)) {
 				if (v.equals(t)) {
 					v.setPi(u);
-					ret= new ArrayList<>();
+					ret = new ArrayList<>();
 					while (!v.equals(s)) {
 						ret.add(new Edge(v.getPi(), v));
 						v = v.getPi();
@@ -201,8 +261,8 @@ public class MaxFlow {
 	 * @return a ArrayList of Strings as specified in the task in dot code
 	 */
 	public final ArrayList<String> findResidualNetwork(final String[] sources, final String[] destinations) {
-		// TODO Add you code here
-		return null; // dummy, replace
+		this.findMaxFlow(sources, destinations);
+		return toDotCode(this.map);
 	}
 
 	@Override
@@ -213,7 +273,7 @@ public class MaxFlow {
 
 	public static void main(String[] args) {
 		MaxFlow m = new MaxFlow("Iksburg1");
-//		System.out.println(m);
-		m.fordFulkerson(new Vertex("A"), new Vertex("D"));
+		// System.out.println(m);
+		m.findResidualNetwork(new String[] { "A" }, new String[] { "F" }).forEach(x -> System.out.println(x));
 	}
 }

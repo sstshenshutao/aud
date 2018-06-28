@@ -113,7 +113,7 @@ public class AdjazenzlistMap implements normalMap {
 				Vertex from = v;
 				for (Vertex ve : lv) {
 					if (!ve.equals(from))
-						le.add(ve);
+						le.add(this.getVertice(ve));
 				}
 				return le;
 			}

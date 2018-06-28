@@ -86,7 +86,8 @@ public class Vertex {
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return "name:"+this.name+"|pi:"+this.pi+"|color:"+this.color;
+//		return "name:"+this.name+"|pi:"+this.pi+"|color:"+this.color;
+		return "name:"+this.name;
 	}
 	
 	@Override
