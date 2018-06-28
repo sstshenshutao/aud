@@ -3,6 +3,7 @@ package lab;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * MaxFlow.java
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 public class MaxFlow {
 	private FlowMap map;
 	private FlowMap rMap;
-
+	private HashMap<Vertex, Boolean> marks;
 	/**
 	 * Return codes: -1 no source on the map -2 no destination on the map -3 if both
 	 * source and destination points are not on the map -4 if no path can be found
@@ -120,8 +121,36 @@ public class MaxFlow {
 	 */
 	public final int findMaxFlow(final String[] sources, final String[] destinations) {
 		// TODO Add you code here
+		boolean noS = true;
+		for(String s :sources) {
+			if(this.map.getVertices().contains(new Vertex(s))) noS = false;
+		}
+		boolean noD = true;
+		for(String s :destinations) {
+			if(this.map.getVertices().contains(new Vertex(s))) noD = false;
+		}
+		if (noS && noD) return NO_SOURCE_DESTINATION_FOUND;
+		if	(noS) return NO_SOURCE_FOUND;
+		if (noD) return NO_DESTINATION_FOUND;
+		
+		for(String s :sources) {
+			for(String d: destinations) {
+				if (s.equals(d)) return Integer.MAX_VALUE;
+			}
+		}
+		
 		FlowMapDecorator decoratedMap = new FlowMapDecorator(this.map, sources, destinations);
-		return fordFulkerson(decoratedMap, decoratedMap.getSuperS(), decoratedMap.getSuperD());
+		int stream = fordFulkerson(decoratedMap, decoratedMap.getSuperS(), decoratedMap.getSuperD());
+		
+		//mark s d
+		this.marks= new HashMap<>();
+		for(String s :sources) {
+			if (this.map.getVertice(new Vertex(s))!=null) this.marks.put(this.map.getVertice(new Vertex(s)), true);
+		}
+		for(String s :destinations) {
+			if (this.map.getVertice(new Vertex(s))!=null) this.marks.put(this.map.getVertice(new Vertex(s)), false);
+		}
+		return (stream==0)? NO_PATH : stream;
 	}
 
 	private ArrayList<Edge> cutSuperNode(ArrayList<Edge> path) {
@@ -138,7 +167,6 @@ public class MaxFlow {
 		return path;
 	}
 
-
 	private int fordFulkerson(FlowMapDecorator decoratedMap, Vertex s, Vertex t) {
 		// init f
 		int stream = 0;
@@ -148,8 +176,9 @@ public class MaxFlow {
 		ArrayList<Edge> p = null;
 		while ((p = cutSuperNode(bfs(getRMap(decoratedMap), s, t))) != null) {
 			p.stream().forEach(x -> System.out.println(x));
-			Integer cp = (int) p.stream().mapToDouble(
-					x -> this.map.getEdges().contains(x) ? this.map.getC(x) -this.map.getF(x) : this.map.getC(x.getTo(), x.getFrom()))
+			Integer cp = (int) p.stream()
+					.mapToDouble(x -> this.map.getEdges().contains(x) ? this.map.getC(x) - this.map.getF(x)
+							: this.map.getC(x.getTo(), x.getFrom()))
 					.min().getAsDouble();
 			System.out.println("cp:" + cp);
 			stream += cp;
@@ -198,9 +227,13 @@ public class MaxFlow {
 			sb.append("-");
 			sb.append(oMap.getF(e));
 			sb.append("\"]");
-
 			sb.append((oMap.getC(e) > oMap.getF(e)) ? "[style=bold];" : ";");
 			ret.add(sb.toString());
+		}
+		for(Vertex v :oMap.getVertices()) {
+			if(this.marks.get(v)!=null) {
+				ret.add(this.marks.get(v)?v.getName()+" [shape=doublecircle][style=bold];":v.getName()+" [shape=circle][style=bold];");
+			}
 		}
 		ret.add("}");
 		return ret;
@@ -274,6 +307,6 @@ public class MaxFlow {
 	public static void main(String[] args) {
 		MaxFlow m = new MaxFlow("Iksburg1");
 		// System.out.println(m);
-		m.findResidualNetwork(new String[] { "A" }, new String[] { "F" }).forEach(x -> System.out.println(x));
+		m.findResidualNetwork(new String[] { "A", "B" }, new String[] { "F" }).forEach(x -> System.out.println(x));
 	}
 }
